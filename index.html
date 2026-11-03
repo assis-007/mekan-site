@@ -460,7 +460,7 @@ form .is-err{border-color:#b3261e}
           <div><small>Base</small><span>Cruz · Ceará</span></div>
         </div>
       </div>
-      <form id="quote" novalidate>
+      <form id="quote" action="https://formsubmit.co/contato@mekan.eng.br" method="POST" accept-charset="UTF-8" novalidate>
         <h3>Pedido de proposta</h3>
         <div class="row">
           <label for="f-name">Nome *<input id="f-name" name="nome" autocomplete="name" required placeholder="Ex.: Maria Souza"></label>
@@ -488,6 +488,7 @@ form .is-err{border-color:#b3261e}
           <label for="f-city">Cidade<input id="f-city" name="cidade" autocomplete="address-level2" placeholder="Ex.: Sobral"></label>
         </div>
         <label for="f-msg">Descreva a demanda *<textarea id="f-msg" name="demanda" required placeholder="Ex.: Inspeção NR 13 em 2 compressores de 200 litros e 1 caldeira. Precisamos do relatório até o fim do mês."></textarea></label>
+        <input type="hidden" name="_subject" value="Pedido de proposta pelo site"><input type="hidden" name="_template" value="table"><input type="hidden" name="_captcha" value="false"><input type="hidden" name="_next" value="https://mekan.eng.br/?enviado=1#contato">
         <input type="text" name="_honey" id="f-honey" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
         <button class="btn btn-signal" type="submit" id="f-send">Enviar pedido de proposta</button>
         <p class="hint" id="f-status" role="status" aria-live="polite"></p>
@@ -522,24 +523,21 @@ document.getElementById('themeBtn').addEventListener('click',function(){
   if(d)r.setAttribute('data-theme','dark');else r.setAttribute('data-theme','light');
   try{localStorage.setItem('mk-theme',d?'dark':'light')}catch(e){}
 });
-// Envio por e-mail via FormSubmit; para trocar o destino, altere FORM_TO
+// Envio por e-mail via FormSubmit (envio normal do formulário, sem AJAX). Destino no atributo action do <form>.
 var FORM_TO='contato@mekan.eng.br';
-document.getElementById('quote').addEventListener('submit',function(e){
-  e.preventDefault();
-  var f=e.target, st=document.getElementById('f-status'), btn=document.getElementById('f-send');
-  var req=['nome','empresa','email','demanda'], bad=null;
-  req.forEach(function(n){var el=f.elements[n];var ok=el.value.trim()&&(n!=='email'||el.checkValidity());el.classList.toggle('is-err',!ok);if(!ok&&!bad)bad=el});
-  if(bad){st.className='hint err';st.textContent='Preencha nome, empresa, e-mail válido e a descrição da demanda.';bad.focus();return}
-  if(f.elements._honey.value)return;
-  var data={};['nome','cargo','empresa','cnpj','email','telefone','servico','cidade','demanda'].forEach(function(n){data[n]=f.elements[n].value.trim()});
-  data._subject='Pedido de proposta: '+data.servico+' · '+data.empresa;data._replyto=data.email;data._template='table';
-  btn.disabled=true;st.className='hint';st.textContent='Enviando…';
-  fetch('https://formsubmit.co/ajax/'+FORM_TO,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(data)})
-    .then(function(r){if(!r.ok)throw 0;return r.json()})
-    .then(function(){st.className='hint ok';st.textContent='Pedido recebido. Você vai receber a proposta no e-mail informado em até 2 dias úteis.';f.reset()})
-    .catch(function(){st.className='hint err';st.textContent='Não foi possível enviar agora. Escreva para '+FORM_TO+' ou use o WhatsApp (22) 98135-8125.'})
-    .then(function(){btn.disabled=false});
-});
+(function(){
+  var f=document.getElementById('quote'), st=document.getElementById('f-status'), btn=document.getElementById('f-send');
+  if(/[?&]enviado=1/.test(location.search)){st.className='hint ok';st.textContent='Pedido recebido. Você vai receber a proposta no e-mail informado em até 2 dias úteis.';try{history.replaceState(null,'',location.pathname+'#contato')}catch(e){}}
+  f.addEventListener('submit',function(e){
+    var req=['nome','empresa','email','demanda'], bad=null;
+    req.forEach(function(n){var el=f.elements[n];var ok=el.value.trim()&&(n!=='email'||el.checkValidity());el.classList.toggle('is-err',!ok);if(!ok&&!bad)bad=el});
+    if(bad){e.preventDefault();st.className='hint err';st.textContent='Preencha nome, empresa, e-mail válido e a descrição da demanda.';bad.focus();return}
+    if(f.elements._honey.value){e.preventDefault();return}
+    f.elements._subject.value='Pedido de proposta: '+(f.elements.servico.value||'Serviço')+' · '+f.elements.empresa.value.trim();
+    btn.disabled=true;st.className='hint';st.textContent='Enviando…';
+  });
+  window.addEventListener('pageshow',function(){btn.disabled=false;if(st.textContent==='Enviando…')st.textContent=''});
+})();
 </script>
 </body>
 </html>
