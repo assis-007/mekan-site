@@ -229,6 +229,7 @@ footer{border-top:4px double var(--accent)}
 form .is-err{border-color:#b3261e}
 #f-status.ok{color:#2f6b2f;font-weight:600}
 #f-status.err{color:#b3261e;font-weight:600}
+#f-wa{margin-top:.6rem}#f-wa[hidden]{display:none}
 .theme-btn{display:inline-grid;place-items:center;width:38px;height:38px;border:1px solid var(--rule);border-radius:50%;background:transparent;color:var(--steel-ink);cursor:pointer;padding:0}
 .theme-btn:hover{border-color:var(--accent);color:var(--accent)}
 .theme-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
@@ -460,7 +461,7 @@ form .is-err{border-color:#b3261e}
           <div><small>Base</small><span>Cruz · Ceará</span></div>
         </div>
       </div>
-      <form id="quote" action="https://formsubmit.co/contato@mekan.eng.br" method="POST" accept-charset="UTF-8" novalidate>
+      <form id="quote" novalidate>
         <h3>Pedido de proposta</h3>
         <div class="row">
           <label for="f-name">Nome *<input id="f-name" name="nome" autocomplete="name" required placeholder="Ex.: Maria Souza"></label>
@@ -488,10 +489,10 @@ form .is-err{border-color:#b3261e}
           <label for="f-city">Cidade<input id="f-city" name="cidade" autocomplete="address-level2" placeholder="Ex.: Sobral"></label>
         </div>
         <label for="f-msg">Descreva a demanda *<textarea id="f-msg" name="demanda" required placeholder="Ex.: Inspeção NR 13 em 2 compressores de 200 litros e 1 caldeira. Precisamos do relatório até o fim do mês."></textarea></label>
-        <input type="hidden" name="_subject" value="Pedido de proposta pelo site"><input type="hidden" name="_template" value="table"><input type="hidden" name="_captcha" value="false"><input type="hidden" name="_next" value="https://mekan.eng.br/?enviado=1#contato">
         <input type="text" name="_honey" id="f-honey" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
         <button class="btn btn-signal" type="submit" id="f-send">Enviar pedido de proposta</button>
         <p class="hint" id="f-status" role="status" aria-live="polite"></p>
+        <a class="btn btn-ghost" id="f-wa" href="#" target="_blank" rel="noopener" hidden>Enviar pelo WhatsApp</a>
       </form>
     </div>
   </section>
@@ -523,20 +524,38 @@ document.getElementById('themeBtn').addEventListener('click',function(){
   if(d)r.setAttribute('data-theme','dark');else r.setAttribute('data-theme','light');
   try{localStorage.setItem('mk-theme',d?'dark':'light')}catch(e){}
 });
-// Envio por e-mail via FormSubmit (envio normal do formulário, sem AJAX). Destino no atributo action do <form>.
+// Envio por e-mail. Com WEB3_KEY preenchida usa o Web3Forms; sem ela, o FormSubmit.
+// Se o envio falhar, aparece o botão "Enviar pelo WhatsApp" com os dados preenchidos.
 var FORM_TO='contato@mekan.eng.br';
+var WEB3_KEY='';
+var WA_NUM='5522981358125';
 (function(){
-  var f=document.getElementById('quote'), st=document.getElementById('f-status'), btn=document.getElementById('f-send');
-  if(/[?&]enviado=1/.test(location.search)){st.className='hint ok';st.textContent='Pedido recebido. Você vai receber a proposta no e-mail informado em até 2 dias úteis.';try{history.replaceState(null,'',location.pathname+'#contato')}catch(e){}}
+  var f=document.getElementById('quote'), st=document.getElementById('f-status'), btn=document.getElementById('f-send'), wa=document.getElementById('f-wa');
+  var fields=['nome','cargo','empresa','cnpj','email','telefone','servico','cidade','demanda'];
+  var labels={nome:'Nome',cargo:'Cargo',empresa:'Empresa',cnpj:'CNPJ',email:'E-mail',telefone:'Telefone',servico:'Serviço',cidade:'Cidade',demanda:'Demanda'};
   f.addEventListener('submit',function(e){
+    e.preventDefault(); wa.hidden=true;
     var req=['nome','empresa','email','demanda'], bad=null;
     req.forEach(function(n){var el=f.elements[n];var ok=el.value.trim()&&(n!=='email'||el.checkValidity());el.classList.toggle('is-err',!ok);if(!ok&&!bad)bad=el});
-    if(bad){e.preventDefault();st.className='hint err';st.textContent='Preencha nome, empresa, e-mail válido e a descrição da demanda.';bad.focus();return}
-    if(f.elements._honey.value){e.preventDefault();return}
-    f.elements._subject.value='Pedido de proposta: '+(f.elements.servico.value||'Serviço')+' · '+f.elements.empresa.value.trim();
+    if(bad){st.className='hint err';st.textContent='Preencha nome, empresa, e-mail válido e a descrição da demanda.';bad.focus();return}
+    if(f.elements._honey.value)return;
+    var data={};fields.forEach(function(n){data[n]=f.elements[n].value.trim()});
+    var subject='Pedido de proposta: '+(data.servico||'Serviço')+' · '+data.empresa;
+    var url,payload;
+    if(WEB3_KEY){url='https://api.web3forms.com/submit';payload=Object.assign({access_key:WEB3_KEY,subject:subject,from_name:'Site Mekan Soluções',replyto:data.email},data)}
+    else{url='https://formsubmit.co/ajax/'+FORM_TO;payload=Object.assign({_subject:subject,_replyto:data.email,_template:'table',_captcha:'false'},data)}
     btn.disabled=true;st.className='hint';st.textContent='Enviando…';
+    var ctrl=('AbortController' in window)?new AbortController():null; var tm=setTimeout(function(){ctrl&&ctrl.abort()},15000);
+    fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload),signal:ctrl?ctrl.signal:undefined})
+      .then(function(r){return r.json().catch(function(){return {}}).then(function(j){if(!r.ok||j.success===false||j.success==='false')throw 0;return j})})
+      .then(function(){st.className='hint ok';st.textContent='Pedido recebido. Você vai receber a proposta no e-mail informado em até 2 dias úteis.';f.reset()})
+      .catch(function(){
+        var txt='Olá! Gostaria de solicitar uma proposta técnica.\n'+fields.filter(function(n){return data[n]}).map(function(n){return labels[n]+': '+data[n]}).join('\n');
+        wa.href='https://wa.me/'+WA_NUM+'?text='+encodeURIComponent(txt); wa.hidden=false;
+        st.className='hint err';st.textContent='Não conseguimos enviar por e-mail agora. Toque em "Enviar pelo WhatsApp" para mandar o mesmo pedido, ou escreva para '+FORM_TO+'.';
+      })
+      .then(function(){clearTimeout(tm);btn.disabled=false});
   });
-  window.addEventListener('pageshow',function(){btn.disabled=false;if(st.textContent==='Enviando…')st.textContent=''});
 })();
 </script>
 </body>
