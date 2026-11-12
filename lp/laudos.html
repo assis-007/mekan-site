@@ -9,7 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rokkitt:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
-<!-- TAG DO GOOGLE ADS: cole aqui o snippet gtag.js da conta (AW-XXXXXXXXXX) antes de publicar -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-300186799"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','AW-300186799');</script>
 <style>
 :root{--dark:#2e1d12;--dark-2:#3b2618;--dark-line:rgba(246,236,220,.12);--on-dark:#f6ecdc;--on-dark-2:#cdb89e;
 --cream:#f6efe3;--white:#fffdf9;--ink:#2b1c12;--muted:#6e5a48;--line:#e6d9c5;--brass:#c9944a;--brass-2:#a8743f;--brass-soft:#f3e4cc;--wa:#1f9d55;
@@ -215,10 +216,10 @@ footer .in{display:grid;gap:8px;padding-block:24px 100px;font-size:.84rem}
 <a class="wa-float wa" href="https://wa.me/5522981358125?text=Ol%C3%A1%2C%20Gabriel%21%20Vim%20pelo%20an%C3%BAncio%20da%20Mekan%20e%20preciso%20de%20um%20laudo.%0ATipo%20de%20laudo%20/%20equipamento%3A%20%0ACidade%3A%20" target="_blank" rel="noopener" data-pos="flutuante" aria-label="Conversar no WhatsApp"><svg class="wai" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.2c0-.1-.2-.2-.5-.3z"/></svg></a>
 <script>
 // Conversão "Clique no WhatsApp": troque AW-XXXXXXXXXX/YYYYYYYY pelo rótulo da conversão criada no Google Ads
-var CONV = "AW-XXXXXXXXXX/YYYYYYYY";
+var CONV = ""; // preencher com "AW-300186799/ROTULO" quando a conversão for criada
 document.querySelectorAll("a.wa").forEach(function(a){
   a.addEventListener("click", function(){
-    try{ if (typeof gtag === "function") gtag("event","conversion",{send_to:CONV, event_label:"laudos-"+a.dataset.pos}); }catch(e){}
+    try{ if (CONV && typeof gtag === "function") gtag("event","conversion",{send_to:CONV, event_label:"laudos-"+a.dataset.pos}); }catch(e){}
   });
 });
 </script>
